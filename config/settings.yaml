@@ -1,0 +1,91 @@
+# ============================================================
+# settings.yaml — Global application configuration
+# ============================================================
+
+app:
+  name: "TraderX YouTube Shorts Generator"
+  version: "0.1.0"
+  log_level: "INFO"          # DEBUG | INFO | WARNING | ERROR
+
+# ── LLM Provider ───────────────────────────────────────────
+llm:
+  provider: "openai"         # openai | gemini | claude
+  model: "gpt-4o"
+  temperature: 0.3
+  max_tokens: 4096
+
+# ── Translation ─────────────────────────────────────────────
+translation:
+  source_language: "ko"
+  target_language: "ja"
+  preserve_tickers: true     # Keep stock symbols (TSLA, AAPL …) as-is
+
+# ── TTS ─────────────────────────────────────────────────────
+tts:
+  provider: "openai"         # openai | azure | google | elevenlabs
+  # OpenAI TTS
+  openai_voice: "shimmer"    # alloy | echo | fable | onyx | nova | shimmer
+  openai_model: "tts-1-hd"
+  # Azure TTS
+  azure_voice: "ja-JP-NanamiNeural"
+  azure_region: "japaneast"
+  # Google TTS
+  google_voice: "ja-JP-Neural2-B"
+  # ElevenLabs
+  elevenlabs_voice_id: ""
+  sample_rate: 24000
+
+# ── Video ───────────────────────────────────────────────────
+video:
+  width: 1080
+  height: 1920
+  fps: 30
+  codec: "libx264"
+  audio_codec: "aac"
+  audio_bitrate: "128k"
+  crf: 23                    # H.264 quality (lower = better, 18-28 typical)
+  preset: "medium"           # ultrafast | fast | medium | slow
+  min_duration: 30
+  max_duration: 60
+
+# ── Subtitles ───────────────────────────────────────────────
+subtitles:
+  font: "NotoSansJP-Bold"
+  font_size: 52
+  color: "&H00FFFFFF"        # ASS colour (white)
+  outline_color: "&H00000000"
+  outline_width: 3
+  shadow: 1
+  position: "bottom"        # top | middle | bottom
+  margin_v: 80              # vertical margin in pixels
+
+# ── Charts ──────────────────────────────────────────────────
+chart:
+  default_period: "1mo"      # 1d | 5d | 1mo | 3mo | 6mo | 1y
+  default_interval: "1d"
+  style: "charles"           # mplfinance style
+  width_px: 1080
+  height_px: 600
+  show_volume: true
+  candle_up_color: "#26A69A"
+  candle_down_color: "#EF5350"
+
+# ── BGM ─────────────────────────────────────────────────────
+bgm:
+  default_volume: 0.12       # 0.0 – 1.0
+  duck_volume: 0.04          # volume when narration is active
+  fade_in: 1.0               # seconds
+  fade_out: 2.0
+
+# ── Asset Search ────────────────────────────────────────────
+assets:
+  pexels_per_page: 5
+  pixabay_per_page: 5
+  cache_dir: "cache"
+  max_cache_age_days: 7
+
+# ── Pipeline ────────────────────────────────────────────────
+pipeline:
+  max_workers: 3             # concurrent scene processing
+  retry_attempts: 2
+  output_dir: "output"
