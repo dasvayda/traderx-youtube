@@ -98,12 +98,13 @@ with st.sidebar:
 
 # ── 탭 ───────────────────────────────────────────────────────────────────────
 
-tab_script, tab_translate, tab_scenes, tab_generate, tab_batch = st.tabs([
+tab_script, tab_translate, tab_scenes, tab_generate, tab_batch, tab_upload = st.tabs([
     "📝 스크립트 입력",
     "🌐 번역",
     "🎬 씬 계획",
     "▶️ 영상 생성",
     "📦 배치",
+    "📤 YouTube 업로드",
 ])
 
 
@@ -553,3 +554,174 @@ with tab_batch:
                 st.success(f"✅ {r.job_id}: {r.final_path}")
             else:
                 st.error(f"❌ {r.job_id}: {r.error}")
+
+
+# ===========================================================================
+# 탭 6 — YouTube 업로드
+# ===========================================================================
+
+with tab_upload:
+    st.header("YouTube 업로드")
+    st.caption("생성된 영상을 YouTube Shorts에 업로드합니다.")
+
+    # ── 업로드할 영상 선택 ────────────────────────────────────────────────
+    output_dir = Path("output")
+    mp4_files = sorted(output_dir.glob("*.mp4")) if output_dir.exists() else []
+    mp4_files = [f for f in mp4_files if not f.name.startswith("raw_")]
+
+    if not mp4_files:
+        st.warning("업로드할 영상이 없습니다. 먼저 영상을 생성해 주세요.")
+    else:
+        selected_file = st.selectbox(
+            "업로드할 영상 선택",
+            mp4_files,
+            format_func=lambda p: p.name,
+        )
+
+        st.video(str(selected_file))
+
+        st.divider()
+
+        # ── 업로드 방식 선택 ──────────────────────────────────────────────
+        upload_mode = st.radio(
+            "업로드 방식",
+            ["🤖 자동 업로드 (YouTube API)", "📋 수동 업로드 (가이드)"],
+            horizontal=True,
+        )
+
+        st.divider()
+
+        # ── 공통: 메타데이터 설정 ─────────────────────────────────────────
+        st.subheader("영상 정보 설정")
+
+        from modules.youtube_uploader import (
+            VideoMetadata, YouTubeUploader,
+            build_metadata_from_scenes, manual_upload_guide,
+        )
+
+        # 자동 메타데이터 생성
+        auto_meta = build_metadata_from_scenes(
+            st.session_state.get("scenes", []),
+            st.session_state.get("japanese_script", ""),
+        )
+
+        col_m1, col_m2 = st.columns([2, 1])
+        with col_m1:
+            meta_title = st.text_input(
+                "제목 (최대 100자)",
+                value=auto_meta.title,
+                max_chars=100,
+            )
+            meta_description = st.text_area(
+                "설명",
+                value=auto_meta.description,
+                height=150,
+                max_chars=5000,
+            )
+            meta_tags_raw = st.text_input(
+                "태그 (쉼표로 구분)",
+                value=", ".join(auto_meta.tags),
+            )
+        with col_m2:
+            meta_privacy = st.selectbox(
+                "공개 범위",
+                ["private", "unlisted", "public"],
+                format_func=lambda x: {
+                    "private": "🔒 비공개",
+                    "unlisted": "🔗 일부 공개",
+                    "public": "🌐 공개",
+                }[x],
+            )
+            meta_category = st.selectbox(
+                "카테고리",
+                ["25", "22", "28"],
+                format_func=lambda x: {
+                    "25": "뉴스 & 정치 (25)",
+                    "22": "인물 & 블로그 (22)",
+                    "28": "과학 & 기술 (28)",
+                }[x],
+            )
+
+        metadata = VideoMetadata(
+            title=meta_title,
+            description=meta_description,
+            tags=[t.strip() for t in meta_tags_raw.split(",") if t.strip()],
+            privacy=meta_privacy,
+            category_id=meta_category,
+        )
+
+        st.divider()
+
+        # ── 수동 업로드 ───────────────────────────────────────────────────
+        if upload_mode.startswith("📋"):
+            st.subheader("수동 업로드 가이드")
+            guide = manual_upload_guide(selected_file, metadata)
+            st.code(guide, language=None)
+            st.link_button(
+                "🎬 YouTube Studio 열기",
+                "https://studio.youtube.com",
+                type="primary",
+            )
+
+        # ── 자동 업로드 ───────────────────────────────────────────────────
+        else:
+            st.subheader("자동 업로드 (YouTube API)")
+
+            secrets_file = os.environ.get(
+                "YOUTUBE_CLIENT_SECRETS_FILE", "client_secrets.json"
+            )
+            secrets_exists = Path(secrets_file).exists()
+
+            if not secrets_exists:
+                st.error(
+                    f"`{secrets_file}` 파일이 없습니다.\n\n"
+                    "**설정 방법:**\n"
+                    "1. [Google Cloud Console](https://console.cloud.google.com) 접속\n"
+                    "2. YouTube Data API v3 활성화\n"
+                    "3. OAuth 2.0 클라이언트 ID 생성 → JSON 다운로드\n"
+                    "4. 파일을 프로젝트 루트에 `client_secrets.json` 으로 저장"
+                )
+            else:
+                uploader = YouTubeUploader(secrets_file)
+                is_auth = uploader.is_authenticated()
+
+                col_auth, col_status = st.columns([1, 2])
+                with col_auth:
+                    if is_auth:
+                        st.success("✅ 인증 완료")
+                    else:
+                        st.warning("⚠️ 인증 필요")
+                        if st.button("🔑 Google 계정 인증", type="primary"):
+                            try:
+                                uploader.authenticate()
+                                st.success("인증 완료! 페이지를 새로고침하세요.")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"인증 오류: {e}")
+
+                with col_status:
+                    st.caption(
+                        "인증 토큰은 `cache/youtube_token.json` 에 저장됩니다.\n"
+                        "채널당 최초 1회만 인증하면 이후 자동으로 사용됩니다."
+                    )
+
+                if is_auth:
+                    st.info(
+                        f"📁 **업로드 대상:** `{selected_file.name}`  \n"
+                        f"🔒 **공개 범위:** {meta_privacy}  \n"
+                        f"📝 **제목:** {meta_title}"
+                    )
+
+                    if st.button("🚀 YouTube에 업로드", type="primary", disabled=not is_auth):
+                        with st.spinner("업로드 중... 파일 크기에 따라 수 분이 걸릴 수 있습니다."):
+                            try:
+                                result = uploader.upload(selected_file, metadata)
+                                if result.success:
+                                    st.success("🎉 업로드 완료!")
+                                    st.markdown(f"**YouTube URL:** {result.url}")
+                                    st.markdown(f"**Shorts URL:** {result.shorts_url}")
+                                    st.link_button("📺 YouTube에서 보기", result.url)
+                                else:
+                                    st.error(f"업로드 실패: {result.error}")
+                            except Exception as e:
+                                st.error(f"오류: {e}")

@@ -41,5 +41,10 @@ playwright>=1.44.0
 # google-cloud-texttospeech>=2.16.0
 # elevenlabs>=1.2.0
 
+# ── YouTube Upload ───────────────────────────────────────────
+google-api-python-client>=2.130.0
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+
 # ── Utilities ────────────────────────────────────────────────
 tqdm>=4.66.0
