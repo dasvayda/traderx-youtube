@@ -65,4 +65,4 @@ ID 형식: `YYYYMMDD-NNN` (생성일 + 당일 순번)
 | 20260902-028 | `[ ]` | `modules/thumbnail_generator.py` | 썸네일 생성 (DALL-E / Stable Diffusion) |
 | 20260902-029 | `[x]` | `modules/youtube_uploader.py` | YouTube Data API v3 업로드 자동화 |
 | 20260902-030 | `[ ]` | Agent 오케스트레이션 | pipeline을 LangGraph / CrewAI 노드로 래핑 |
-| 20260902-031 | `[ ]` | 다국어 지원 | translator 타겟 언어 파라미터화 (현재 ja 고정) |
+| 20260902-031 | `[x]` | 다국어 지원 | translator 타겟 언어 파라미터화 (ja/en/zh/es/vi) |

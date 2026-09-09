@@ -139,6 +139,7 @@ class Pipeline:
 
         # ── Module instances ─────────────────────────────────────────
         llm_cfg = config.get("llm", {})
+        trans_cfg = config.get("translation", {})
         tts_cfg = config.get("tts", {})
         video_cfg = config.get("video", {})
         bgm_cfg_dict = config.get("bgm", {})
@@ -148,6 +149,8 @@ class Pipeline:
             provider=llm_cfg.get("provider", "openai"),
             model=llm_cfg.get("model", "gpt-4o"),
             temperature=llm_cfg.get("temperature", 0.3),
+            source_language=trans_cfg.get("source_language", "ko"),
+            target_language=trans_cfg.get("target_language", "ja"),
         )
         self._parser = ScriptParser()
         self._scene_gen = create_scene_generator(

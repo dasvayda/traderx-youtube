@@ -76,6 +76,18 @@ with st.sidebar:
         index=["openai", "gemini", "claude"].index(CFG["llm"]["provider"]),
     )
 
+    st.subheader("번역 언어")
+    from modules.translator import SUPPORTED_TARGET_LANGUAGES
+
+    target_lang_options = list(SUPPORTED_TARGET_LANGUAGES.keys())
+    default_target = CFG.get("translation", {}).get("target_language", "ja")
+    target_language = st.selectbox(
+        "번역 대상 언어",
+        target_lang_options,
+        index=target_lang_options.index(default_target) if default_target in target_lang_options else 0,
+        format_func=lambda code: f"{code} — {SUPPORTED_TARGET_LANGUAGES[code]}",
+    )
+
     st.subheader("TTS 제공자")
     tts_provider = st.selectbox(
         "일본어 음성 합성 엔진",
@@ -168,7 +180,8 @@ with tab_script:
 # ===========================================================================
 
 with tab_translate:
-    st.header("한국어 → 일본어 번역")
+    target_lang_label = SUPPORTED_TARGET_LANGUAGES.get(target_language, target_language)
+    st.header(f"한국어 → {target_lang_label} 번역")
     st.caption("번역 결과는 영상 자막·TTS 음성에 사용됩니다. 생성 후 직접 편집할 수 있습니다.")
 
     if not st.session_state["korean_script"]:
@@ -187,7 +200,7 @@ with tab_translate:
             )
 
         with col_ja:
-            st.subheader("🇯🇵 번역문 (일본어)")
+            st.subheader(f"번역문 ({target_lang_label})")
 
             if st.button("🔄 번역 실행", type="primary"):
                 with st.spinner("번역 중..."):
@@ -197,9 +210,11 @@ with tab_translate:
                             provider=llm_provider,
                             model=CFG["llm"]["model"],
                             temperature=CFG["llm"]["temperature"],
+                            source_language=CFG.get("translation", {}).get("source_language", "ko"),
+                            target_language=target_language,
                         )
                         result = translator.translate(st.session_state["korean_script"])
-                        st.session_state["japanese_script"] = result.translated_japanese
+                        st.session_state["japanese_script"] = result.translated_text
                         st.success("번역 완료!")
                     except Exception as e:
                         st.error(f"번역 오류: {e}")
