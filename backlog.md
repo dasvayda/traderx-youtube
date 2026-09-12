@@ -66,6 +66,6 @@ ID 형식: `YYYYMMDD-NNN` (생성일 + 당일 순번)
 | 20260902-029 | `[x]` | `modules/youtube_uploader.py` | YouTube Data API v3 업로드 자동화 |
 | 20260902-030 | `[ ]` | Agent 오케스트레이션 | pipeline을 LangGraph / CrewAI 노드로 래핑 |
 | 20260902-031 | `[x]` | 다국어 지원 | translator 타겟 언어 파라미터화 (ja/en/zh/es/vi) |
-| 20260912-001 | `[ ]` | Higgsfield AI 영상 클립 생성 연동 | asset_manager에 HiggsfileProvider 추가; 개발은 무료 티어(10크레딧/일), 프로덕션은 Starter($19/월) |
+| 20260912-001 | `[ ]` | Higgsfield AI 영상 클립 생성 연동 | footage 씬 전용; 무료 티어는 워터마크·크레딧 제한으로 실효성 낮음 → 프로덕션 Starter($19/월) 기준으로 도입 검토 |
 | 20260912-002 | `[ ]` | 로컬 Wan 2.2 (1.3B) 폴백 클립 생성 | VRAM 4~6GB 이상 환경에서 무료 로컬 추론; Higgsfield 미인증 또는 크레딧 소진 시 자동 폴백 |
 | 20260912-003 | `[ ]` | LTX-Video 2.3 로컬 클립 생성 (고사양) | VRAM 8GB+ 환경; Wan 2.2 대비 속도 우수, 720p 5초 클립 RTX4090 기준 1분 이내 |
