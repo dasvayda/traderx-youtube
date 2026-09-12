@@ -17,9 +17,9 @@ ID 형식: `YYYYMMDD-NNN` (생성일 + 당일 순번)
 | 20260902-001 | `[x]` | `docs/01_translator.md` | 완료 |
 | 20260902-002 | `[x]` | `docs/02_script_parser.md` | 완료 |
 | 20260902-003 | `[x]` | `docs/03_scene_generator.md` | 완료 |
-| 20260902-004 | `[ ]` | `docs/04_asset_manager.md` | 파일 없음 |
+| 20260902-004 | `[x]` | `docs/04_asset_manager.md` | 완료 |
 | 20260902-005 | `[x]` | `docs/05_chart_generator.md` | 완료 |
-| 20260902-006 | `[ ]` | `docs/06_tts_engine.md` | 파일 없음 |
+| 20260902-006 | `[x]` | `docs/06_tts_engine.md` | 완료 |
 | 20260902-007 | `[ ]` | `docs/07_subtitle_generator.md` | 파일 없음 |
 | 20260902-008 | `[ ]` | `docs/08_video_composer.md` | 파일 없음 |
 | 20260902-009 | `[ ]` | `docs/09_bgm_manager.md` | 파일 없음 |
