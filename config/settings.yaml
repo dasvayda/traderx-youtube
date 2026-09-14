@@ -57,7 +57,7 @@ subtitles:
   outline_width: 3
   shadow: 1
   position: "bottom"        # top | middle | bottom
-  margin_v: 80              # vertical margin in pixels
+  margin_v: 360             # 하단 여백 중앙 (1480~1920px 구간, YouTube UI 안전선 고려)
 
 # ── Charts ──────────────────────────────────────────────────
 chart:
