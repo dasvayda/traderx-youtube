@@ -1,0 +1,28 @@
+{
+  "feed": [
+    {
+      "title": "NVDA hits record high on AI demand",
+      "summary": "NVIDIA stock surged as data center revenue beat expectations.",
+      "source": "Reuters",
+      "url": "https://example.com/nvda",
+      "time_published": "20260912T090000",
+      "overall_sentiment_label": "Bullish",
+      "overall_sentiment_score": "0.45",
+      "ticker_sentiment": [
+        {"ticker": "NVDA", "relevance_score": "0.9"}
+      ]
+    },
+    {
+      "title": "Apple reports strong services revenue",
+      "summary": "AAPL earnings topped analyst estimates.",
+      "source": "Bloomberg",
+      "url": "https://example.com/aapl",
+      "time_published": "20260912T100000",
+      "overall_sentiment_label": "Somewhat-Bullish",
+      "overall_sentiment_score": "0.30",
+      "ticker_sentiment": [
+        {"ticker": "AAPL", "relevance_score": "0.85"}
+      ]
+    }
+  ]
+}

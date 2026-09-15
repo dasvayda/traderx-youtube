@@ -25,7 +25,11 @@ env/
 ENV/
 
 # ── Runtime outputs (not source) ─────────────────────────────
-output/
+output/*
+!output/test_runs/
+output/test_runs/*
+!output/test_runs/.gitkeep
+!output/test_runs/README.md
 assets/audio/
 assets/charts/
 assets/images/

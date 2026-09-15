@@ -136,6 +136,7 @@ class Pipeline:
         self._cb = progress_callback or (lambda j: None)
 
         load_dotenv()
+        load_dotenv("config/.env")
 
         # ── Module instances ─────────────────────────────────────────
         llm_cfg = config.get("llm", {})

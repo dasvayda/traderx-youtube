@@ -21,7 +21,8 @@ import streamlit as st
 import yaml
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv()              # project root .env
+load_dotenv("config/.env")  # alternate location
 
 logging.basicConfig(
     level=logging.INFO,
