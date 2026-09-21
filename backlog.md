@@ -67,6 +67,6 @@ ID 형식: `YYYYMMDD-NNN` (생성일 + 당일 순번)
 | 20260902-030 | `[x]` | Agent 오케스트레이션 | `pipeline.py`를 LangGraph 노드로 래핑: `NewsNode` (news_fetcher) → `ScriptNode` (script_writer) → `TranslateNode` → `SceneNode` → `PipelineNode` (video 생성); 각 노드는 `AgentState` TypedDict를 공유 상태로 전달; CrewAI 대안: `ResearchAgent`(news) + `WriterAgent`(script) + `ProducerAgent`(pipeline); 의존성: `langgraph>=0.1`, `langchain-openai>=0.1`; 진입점: `modules/agent_orchestrator.py` |
 | 20260915-001 | `[x]` | `modules/video_composer.py` 3-zone Shorts 레이아웃 재설계 | letterbox 차트 + 헤더/푸터 영역 분리 (commit 1e6ba11) |
 | 20260902-031 | `[x]` | 다국어 지원 | translator 타겟 언어 파라미터화 (ja/en/zh/es/vi) |
-| 20260912-001 | `[ ]` | Higgsfield AI 영상 클립 생성 연동 | footage 씬 전용; 무료 티어는 워터마크·크레딧 제한으로 실효성 낮음 → 프로덕션 Starter($19/월) 기준으로 도입 검토 |
-| 20260912-002 | `[ ]` | 로컬 Wan 2.2 (1.3B) 폴백 클립 생성 | VRAM 4~6GB 이상 환경에서 무료 로컬 추론; Higgsfield 미인증 또는 크레딧 소진 시 자동 폴백 |
-| 20260912-003 | `[ ]` | LTX-Video 2.3 로컬 클립 생성 (고사양) | VRAM 8GB+ 환경; Wan 2.2 대비 속도 우수, 720p 5초 클립 RTX4090 기준 1분 이내 |
+| 20260912-001 | `[x]` | Higgsfield AI 영상 클립 생성 연동 | `modules/clip_generator.py` HiggsFieldGenerator — REST API, 폴링 방식 |
+| 20260912-002 | `[x]` | 로컬 Wan 2.2 (1.3B) 폴백 클립 생성 | `modules/clip_generator.py` WanGenerator — diffusers fp16, CUDA 4–6 GB |
+| 20260912-003 | `[x]` | LTX-Video 2.3 로컬 클립 생성 (고사양) | `modules/clip_generator.py` LTXVideoGenerator — diffusers bfloat16, CUDA 8 GB+ |
