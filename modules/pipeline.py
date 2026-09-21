@@ -176,6 +176,12 @@ class Pipeline:
                 "voice": tts_cfg.get("azure_voice", "ja-JP-NanamiNeural"),
                 "region": tts_cfg.get("azure_region", "japaneast"),
             }
+        elif tts_provider == "xtts":
+            tts_kwargs = {
+                "speaker_wav": tts_cfg.get("xtts_speaker_wav", "samples/speaker.wav"),
+                "language": tts_cfg.get("xtts_language", "ja"),
+                "device": tts_cfg.get("xtts_device", ""),
+            }
         self._tts = create_tts_engine(provider=tts_provider, **tts_kwargs)
 
         sub_style = SubtitleStyle(

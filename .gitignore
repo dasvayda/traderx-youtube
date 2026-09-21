@@ -52,3 +52,7 @@ Thumbs.db
 
 # ── Logs ─────────────────────────────────────────────────────
 *.log
+
+# ── Voice samples (personal — do not commit) ─────────────────
+samples/*.wav
+samples/*.mp3

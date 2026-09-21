@@ -1,7 +1,7 @@
 """
 tts_engine.py — Pluggable Japanese TTS narration engine.
 
-Supported providers: OpenAI TTS, Azure Speech, Google Cloud TTS, ElevenLabs.
+Supported providers: OpenAI TTS, Azure Speech, Google Cloud TTS, ElevenLabs, XTTS-v2.
 All providers produce WAV or MP3 files at the specified output path.
 """
 
@@ -197,6 +197,116 @@ class ElevenLabsTTSEngine(BaseTTSEngine):
 
 
 # ---------------------------------------------------------------------------
+# XTTS-v2 (Coqui TTS) — local voice cloning
+# ---------------------------------------------------------------------------
+
+class XTTSEngine(BaseTTSEngine):
+    """
+    XTTS-v2 by Coqui — fully local, zero API cost, voice cloning from a short sample.
+
+    Requirements::
+
+        pip install TTS>=0.22.0 torch torchaudio
+
+    The model (~2 GB) is auto-downloaded on first use to ~/.local/share/tts/.
+
+    Voice cloning:
+        Pass a WAV/MP3 reference file (3–30 seconds of clean speech) to
+        ``speaker_wav``.  The model reproduces the timbre, accent, and pace
+        from that sample while synthesising new text.
+
+    Supported languages (XTTS-v2):
+        ja, en, zh, ko, de, fr, es, pt, it, pl, tr, ru, nl, cs, ar, hu, ...
+
+    Example::
+
+        engine = XTTSEngine(
+            speaker_wav="samples/my_voice.wav",
+            language="ja",
+        )
+        result = engine.synthesize("こんにちは、テスラの株価をお伝えします。",
+                                   Path("assets/audio/narration.wav"))
+    """
+
+    _MODEL_NAME = "tts_models/multilingual/multi-dataset/xtts_v2"
+
+    def __init__(
+        self,
+        speaker_wav: str | Path,
+        language: str = "ja",
+        device: str = "",           # "" = auto-detect (cuda if available, else cpu)
+        use_deepspeed: bool = False,
+        gpu_layers: int = 0,
+    ):
+        self._speaker_wav = str(Path(speaker_wav).resolve())
+        self._language = language
+        self._device = device
+        self._use_deepspeed = use_deepspeed
+        self._gpu_layers = gpu_layers
+        self._tts = None
+
+    def _load_model(self) -> None:
+        if self._tts is not None:
+            return
+
+        try:
+            from TTS.api import TTS
+        except ImportError as e:
+            raise ImportError(
+                "pip install TTS>=0.22.0 torch torchaudio"
+            ) from e
+
+        import torch
+
+        device = self._device
+        if not device:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        logger.info("[XTTS] Loading model on %s (first run downloads ~2 GB) …", device)
+        self._tts = TTS(
+            model_name=self._MODEL_NAME,
+            progress_bar=False,
+        ).to(device)
+        logger.info("[XTTS] Model ready")
+
+    def synthesize(self, text: str, output_path: Path) -> TTSResult:
+        self._load_model()
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # XTTS outputs WAV; rename if caller expects .mp3
+        wav_path = output_path.with_suffix(".wav")
+
+        logger.info(
+            "[XTTS] Synthesising %d chars (lang=%s) → %s",
+            len(text), self._language, wav_path,
+        )
+        self._tts.tts_to_file(
+            text=text,
+            speaker_wav=self._speaker_wav,
+            language=self._language,
+            file_path=str(wav_path),
+        )
+
+        # If caller wants .mp3, convert with pydub
+        if output_path.suffix.lower() == ".mp3":
+            try:
+                from pydub import AudioSegment
+                AudioSegment.from_wav(str(wav_path)).export(
+                    str(output_path), format="mp3"
+                )
+                wav_path.unlink(missing_ok=True)
+            except Exception as exc:
+                logger.warning("[XTTS] MP3 conversion failed (%s); keeping WAV", exc)
+                output_path = wav_path
+        else:
+            output_path = wav_path
+
+        duration = self._get_audio_duration(output_path)
+        logger.info("[XTTS] Done: %.1fs → %s", duration, output_path)
+        return TTSResult(output_path, duration, "xtts", self._speaker_wav)
+
+
+# ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
 
@@ -206,6 +316,7 @@ def create_tts_engine(provider: str = "openai", **kwargs) -> BaseTTSEngine:
         "azure": AzureTTSEngine,
         "google": GoogleTTSEngine,
         "elevenlabs": ElevenLabsTTSEngine,
+        "xtts": XTTSEngine,
     }
     cls = registry.get(provider.lower())
     if cls is None:
