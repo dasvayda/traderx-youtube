@@ -36,7 +36,7 @@ assets/images/
 assets/videos/
 cache/
 translations/
-scripts/
+scripts/generated/
 
 # ── OS / IDE ──────────────────────────────────────────────────
 .DS_Store

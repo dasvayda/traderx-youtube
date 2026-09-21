@@ -256,7 +256,42 @@ class XTTSEngine(BaseTTSEngine):
                 "pip install TTS>=0.22.0 torch torchaudio"
             ) from e
 
+        import os
         import torch
+
+        # Non-commercial use — auto-accept Coqui ToS to avoid interactive prompt
+        os.environ.setdefault("COQUI_TOS_AGREED", "1")
+
+        # PyTorch 2.6+ changed torch.load default to weights_only=True which
+        # breaks TTS checkpoint loading. Patch it to keep weights_only=False.
+        _orig_load = torch.load
+        def _permissive_load(f, *a, **kw):
+            kw.setdefault("weights_only", False)
+            return _orig_load(f, *a, **kw)
+        torch.load = _permissive_load
+
+        # torchaudio 2.1+ removed set_audio_backend and defaults to torchcodec.
+        # Monkey-patch torchaudio.load to use soundfile directly so torchcodec
+        # is not required.
+        try:
+            import torchaudio
+            import soundfile as _sf
+
+            def _sf_torchaudio_load(path, frame_offset=0, num_frames=-1,
+                                    normalize=True, channels_first=True, format=None,
+                                    backend=None, **kwargs):
+                import numpy as np
+                data, sr = _sf.read(str(path), dtype="float32", always_2d=True)
+                if frame_offset:
+                    data = data[frame_offset:]
+                if num_frames > 0:
+                    data = data[:num_frames]
+                tensor = torch.from_numpy(data.T if channels_first else data)
+                return tensor, sr
+
+            torchaudio.load = _sf_torchaudio_load
+        except Exception as _e:
+            logger.warning("[XTTS] torchaudio patch failed: %s", _e)
 
         device = self._device
         if not device:
